@@ -2,6 +2,11 @@ name: Manage AKS Cluster
 
 on:
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform on AKS cluster (start or stop)'
+        required: true
+        default: 'start'
 
 jobs:
   manage-cluster:
