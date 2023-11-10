@@ -1,0 +1,41 @@
+name: Manage AKS Cluster
+
+on:
+  workflow_dispatch:
+
+jobs:
+  manage-cluster:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Install Azure CLI
+      run: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    - name: Login to Azure
+      run: az login --service-principal --username ${{ secrets.AZURE_SP_APP_ID }} --password ${{ secrets.AZURE_SP_PASSWORD }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Manage AKS Cluster
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          case "${{ inputs.action }}" in
+            "start")
+              az aks start --resource-group <resource-group> --name <aks-cluster-name>
+              ;;
+            "stop")
+              az aks stop --resource-group <resource-group> --name <aks-cluster-name>
+              ;;
+            *)
+              echo "Invalid action specified. Use 'start' or 'stop'."
+              exit 1
+              ;;
+          esac
+        else
+          echo "This workflow is intended for manual runs only."
+          exit 1
+        fi
+      env:
+        INPUT_ACTION: ${{ github.event.inputs.action }}
